@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Registration - Smart Industrial Portal{% endblock %}
+
+{% block public_content %}
+<div class="auth-wrapper" style="padding-top: 1rem; padding-bottom: 1rem;">
+    <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-header">
+            <h1>Register Account</h1>
+            <p>Sign up to raise service tickets and track progress</p>
+        </div>
+        <form action="/register" method="POST">
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required placeholder="e.g. Rajesh Kumar">
+            </div>
+            <div class="form-group">
+                <label for="department">Department</label>
+                <select id="department" name="department" required>
+                    <option value="" disabled selected>Select Department</option>
+                    <option value="IT Support">IT Support</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Water Supply">Water Supply</option>
+                    <option value="Equipment Repair">Equipment Repair</option>
+                    <option value="Mining Infrastructure">Mining Infrastructure</option>
+                    <option value="Safety Department">Safety Department</option>
+                    <option value="Housekeeping">Housekeeping</option>
+                    <option value="Administration">Administration</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="email">Corporate Email</label>
+                <input type="email" id="email" name="email" required placeholder="e.g. rajesh@nlc.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Create password">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Register Account</button>
+        </form>
+        <div class="auth-footer">
+            <p>Already have an account? <a href="/login">Log in here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

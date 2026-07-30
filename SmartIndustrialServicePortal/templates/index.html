@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}NLCIL Smart Industrial Portal - Home{% endblock %}
+
+{% block public_content %}
+<div class="hero-section">
+    <div class="hero-text">
+        <h1>Smart Industrial Service & Complaint Portal</h1>
+        <p>A centralized digital portal for employees of NLC India Limited (NLCIL) to easily raise maintenance requests, report safety hazards, seek IT support, and track resolutions in real time.</p>
+        <div style="display: flex; gap: 1rem;">
+            <a href="/login" class="btn btn-primary">File a Complaint</a>
+            <a href="/about" class="btn btn-secondary">Learn More</a>
+        </div>
+    </div>
+    <div class="hero-image">
+        <svg width="450" height="350" viewBox="0 0 500 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="50" y="50" width="400" height="300" rx="20" fill="var(--bg-secondary)" stroke="var(--border-color)" stroke-width="4"/>
+            <rect x="80" y="90" width="340" height="35" rx="5" fill="var(--primary-light)"/>
+            <circle cx="105" cy="107" r="8" fill="var(--primary)"/>
+            <line x1="125" y1="107" x2="250" y2="107" stroke="var(--primary)" stroke-width="3" stroke-linecap="round"/>
+            <rect x="80" y="150" width="155" height="150" rx="10" fill="var(--bg-primary)" stroke="var(--border-color)" stroke-width="2"/>
+            <rect x="265" y="150" width="155" height="150" rx="10" fill="var(--bg-primary)" stroke="var(--border-color)" stroke-width="2"/>
+            <circle cx="157" cy="195" r="20" fill="var(--warning-light)"/>
+            <circle cx="342" cy="195" r="20" fill="var(--success-light)"/>
+            <rect x="110" y="240" width="95" height="10" rx="5" fill="var(--text-secondary)" opacity="0.3"/>
+            <rect x="125" y="260" width="65" height="8" rx="4" fill="var(--text-secondary)" opacity="0.2"/>
+            <rect x="295" y="240" width="95" height="10" rx="5" fill="var(--text-secondary)" opacity="0.3"/>
+            <rect x="310" y="260" width="65" height="8" rx="4" fill="var(--text-secondary)" opacity="0.2"/>
+        </svg>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 2rem;">
+    <h2 class="card-title" style="justify-content: center; font-size: 1.5rem;">Corporate Service Features</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+        <div class="card" style="margin-bottom: 0; padding: 1.25rem; background-color: var(--bg-primary);">
+            <h3 style="margin-bottom: 0.5rem; color: var(--primary);">IT Support</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">Fast troubleshooting for server, networking, and system issues inside NLCIL plant premises.</p>
+        </div>
+        <div class="card" style="margin-bottom: 0; padding: 1.25rem; background-color: var(--bg-primary);">
+            <h3 style="margin-bottom: 0.5rem; color: var(--warning);">Electrical & Mechanical</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">Report equipment failures, conveyer belt issues, and transformer sparking immediately.</p>
+        </div>
+        <div class="card" style="margin-bottom: 0; padding: 1.25rem; background-color: var(--bg-primary);">
+            <h3 style="margin-bottom: 0.5rem; color: var(--danger);">Safety & Hazard Reporting</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">Direct line of communication for workplace safety concerns and high-risk equipment issues.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

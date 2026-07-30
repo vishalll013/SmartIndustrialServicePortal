@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Feedback - Smart Industrial Portal{% endblock %}
+{% block admin_header_title %}Employee Feedback Console{% endblock %}
+
+{% block admin_content %}
+<!-- Stats Cards Panel -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ total_feedback }}</span>
+            <span class="stat-label">Total Submissions</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ avg_rating }} / 5.0</span>
+            <span class="stat-label">Average Rating</span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">
+        <span>Employee Feedback Records</span>
+    </div>
+
+    <!-- Filtering Panel -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <input type="text" id="feedback-search" placeholder="Search by employee name or ID..." style="flex: 2; min-width: 250px;">
+        <select id="rating-filter" style="flex: 1; min-width: 150px;">
+            <option value="">All Ratings</option>
+            <option value="5">5 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="2">2 Stars</option>
+            <option value="1">1 Star</option>
+        </select>
+        <select id="reviewed-filter" style="flex: 1; min-width: 150px;">
+            <option value="">All Statuses</option>
+            <option value="Reviewed">Reviewed</option>
+            <option value="Not Reviewed">Not Reviewed</option>
+        </select>
+    </div>
+
+    {% if feedback_list %}
+        <div class="table-responsive">
+            <table id="feedback-table">
+                <thead>
+                    <tr>
+                        <th>Feedback ID</th>
+                        <th>Employee Name</th>
+                        <th>Employee ID</th>
+                        <th>Rating</th>
+                        <th>Feedback Comments</th>
+                        <th>Submitted Date & Time</th>
+                        <th>Reviewed Status</th>
+                        <th class="actions-column">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in feedback_list %}
+                        <tr class="feedback-row" data-name="{{ item.employee_name | lower }}" data-id="{{ item.employee_id }}" data-rating="{{ item.rating }}" data-reviewed="{% if item.is_reviewed %}Reviewed{% else %}Not Reviewed{% endif %}">
+                            <td>#{{ item.feedback_id }}</td>
+                            <td style="font-weight: 600;">{{ item.employee_name }}</td>
+                            <td>#{{ item.employee_id }}</td>
+                            <td>
+                                <div title="{{ item.rating }} Stars">
+                                    {% for i in range(5) %}
+                                        {% if i < item.rating %}
+                                            <span class="static-stars">★</span>
+                                        {% else %}
+                                            <span style="color: var(--border-color); font-weight: bold; display: inline-block;">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td style="max-width: 300px; white-space: pre-wrap; font-size: 0.9rem;">{{ item.feedback }}</td>
+                            <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') if item.created_at else 'N/A' }}</td>
+                            <td>
+                                {% if item.is_reviewed %}
+                                    <span class="badge badge-status-resolved">Reviewed</span>
+                                {% else %}
+                                    <span class="badge badge-status-pending">Not Reviewed</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions-column">
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    {% if not item.is_reviewed %}
+                                        <form action="/admin/review_feedback/{{ item.feedback_id }}" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-primary btn-sm">Mark Reviewed</button>
+                                        </form>
+                                    {% endif %}
+                                    <form action="/admin/delete_feedback/{{ item.feedback_id }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this feedback?');" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.4rem 0.6rem;" title="Delete Feedback">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: var(--text-secondary); text-align: center; padding: 3rem 0;">No employee feedback submissions registered in the database.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search and Filters logic
+    const searchInput = document.getElementById('feedback-search');
+    const ratingFilter = document.getElementById('rating-filter');
+    const reviewedFilter = document.getElementById('reviewed-filter');
+    const rows = document.querySelectorAll('.feedback-row');
+
+    function filterFeedback() {
+        const query = searchInput.value.toLowerCase();
+        const rating = ratingFilter.value;
+        const reviewed = reviewedFilter.value;
+
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name');
+            const empId = row.getAttribute('data-id');
+            const rRating = row.getAttribute('data-rating');
+            const rReviewed = row.getAttribute('data-reviewed');
+
+            const matchQuery = name.includes(query) || empId.includes(query);
+            const matchRating = !rating || rRating === rating;
+            const matchReviewed = !reviewed || rReviewed === reviewed;
+
+            if (matchQuery && matchRating && matchReviewed) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterFeedback);
+    if (ratingFilter) ratingFilter.addEventListener('change', filterFeedback);
+    if (reviewedFilter) reviewedFilter.addEventListener('change', filterFeedback);
+</script>
+{% endblock %}

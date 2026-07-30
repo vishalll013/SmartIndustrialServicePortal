@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Complaint History - Smart Industrial Portal{% endblock %}
+{% block header_title %}Complaint & Service History{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-title">
+        <span>My Service History</span>
+        <button onclick="exportTableToCSV('history-table', 'my_complaints_history.csv')" class="btn btn-secondary btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export CSV
+        </button>
+    </div>
+
+    <!-- Client-side Search / Filtering -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+        <input type="text" id="search-input" placeholder="Search by ticket title..." style="flex: 2;">
+        <select id="status-filter" style="flex: 1;">
+            <option value="">All Statuses</option>
+            <option value="Pending">Pending</option>
+            <option value="Assigned">Assigned</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+        <select id="priority-filter" style="flex: 1;">
+            <option value="">All Priorities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+        </select>
+    </div>
+
+    {% if complaints %}
+        <div class="table-responsive">
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date Filed</th>
+                        <th>Assigned Staff</th>
+                        <th>Attachment</th>
+                        <th class="actions-column">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tickets-tbody">
+                    {% for ticket in complaints %}
+                        <tr class="ticket-row" data-title="{{ ticket.title | lower }}" data-status="{{ ticket.status }}" data-priority="{{ ticket.priority }}">
+                            <td>#{{ ticket.complaint_id }}</td>
+                            <td style="font-weight: 600;">{{ ticket.title }}</td>
+                            <td>{{ ticket.category }}</td>
+                            <td>
+                                <span class="badge badge-priority-{{ ticket.priority | lower }}">
+                                    {{ ticket.priority }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-status-{{ ticket.status | replace(' ', '-') | lower }}">
+                                    {{ ticket.status }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') if ticket.created_at else 'N/A' }}</td>
+                            <td>{{ ticket.assigned_to if ticket.assigned_to else 'Not Assigned' }}</td>
+                            <td>
+                                {% if ticket.image_path %}
+                                    <a href="{{ url_for('static', filename='uploads/' + ticket.image_path) }}" target="_blank" style="color: var(--primary); text-decoration: underline; font-size: 0.85rem;">View File</a>
+                                {% else %}
+                                    <span style="color: var(--text-secondary); font-size: 0.85rem;">None</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions-column">
+                                <button class="btn btn-secondary btn-sm" onclick="showTicketDetail('{{ ticket.complaint_id }}', '{{ ticket.title | escape }}', '{{ ticket.description | escape | replace('\n', ' ') }}', '{{ ticket.category }}', '{{ ticket.priority }}', '{{ ticket.status }}', '{{ ticket.assigned_to if ticket.assigned_to else 'Not Assigned' }}', '{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') if ticket.created_at else 'N/A' }}')">
+                                    Details
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="text-align: center; color: var(--text-secondary); padding: 3rem 0;">No complaint records found.</p>
+    {% endif %}
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" id="detail-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title" id="m-title">Ticket Details</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.95rem;">
+            <div>
+                <strong>Ticket ID:</strong> <span id="m-id"></span>
+            </div>
+            <div>
+                <strong>Category:</strong> <span id="m-category"></span>
+            </div>
+            <div style="display: flex; gap: 2rem;">
+                <div>
+                    <strong>Priority:</strong> <span id="m-priority"></span>
+                </div>
+                <div>
+                    <strong>Status:</strong> <span id="m-status"></span>
+                </div>
+            </div>
+            <div>
+                <strong>Assigned Staff:</strong> <span id="m-staff"></span>
+            </div>
+            <div>
+                <strong>Date Submitted:</strong> <span id="m-date"></span>
+            </div>
+            <div>
+                <strong>Description:</strong>
+                <p id="m-desc" style="background-color: var(--bg-primary); padding: 0.75rem; border-radius: 0.5rem; margin-top: 0.25rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); white-space: pre-wrap; max-height: 150px; overflow-y: auto;"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search and Filters logic
+    const searchInput = document.getElementById('search-input');
+    const statusFilter = document.getElementById('status-filter');
+    const priorityFilter = document.getElementById('priority-filter');
+    const rows = document.querySelectorAll('.ticket-row');
+
+    function filterTable() {
+        const query = searchInput.value.toLowerCase();
+        const status = statusFilter.value;
+        const priority = priorityFilter.value;
+
+        rows.forEach(row => {
+            const rTitle = row.getAttribute('data-title');
+            const rStatus = row.getAttribute('data-status');
+            const rPriority = row.getAttribute('data-priority');
+
+            const matchQuery = rTitle.includes(query);
+            const matchStatus = !status || rStatus === status;
+            const matchPriority = !priority || rPriority === priority;
+
+            if (matchQuery && matchStatus && matchPriority) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterTable);
+    if (statusFilter) statusFilter.addEventListener('change', filterTable);
+    if (priorityFilter) priorityFilter.addEventListener('change', filterTable);
+
+    // Modal Details Logic
+    const modal = document.getElementById('detail-modal');
+    
+    function showTicketDetail(id, title, desc, cat, priority, status, staff, date) {
+        document.getElementById('m-id').innerText = '#' + id;
+        document.getElementById('m-title').innerText = title;
+        document.getElementById('m-category').innerText = cat;
+        document.getElementById('m-priority').innerText = priority;
+        document.getElementById('m-status').innerText = status;
+        document.getElementById('m-staff').innerText = staff;
+        document.getElementById('m-date').innerText = date;
+        document.getElementById('m-desc').innerText = desc;
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    // Close on overlay click
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}

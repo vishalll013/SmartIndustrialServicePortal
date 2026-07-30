@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Directory - Smart Industrial Portal{% endblock %}
+{% block admin_header_title %}Employee Directory{% endblock %}
+
+{% block admin_content %}
+<div class="card">
+    <div class="card-title">
+        <span>Registered Employees List</span>
+        <button onclick="exportTableToCSV('employees-table', 'registered_employees.csv')" class="btn btn-secondary btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export CSV
+        </button>
+    </div>
+
+    <!-- Quick search filter -->
+    <div style="margin-bottom: 1.5rem;">
+        <input type="text" id="employee-search" placeholder="Filter employees by name, department or email..." style="width: 100%;">
+    </div>
+
+    {% if employees %}
+        <div class="table-responsive">
+            <table id="employees-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>Department</th>
+                        <th>Email Address</th>
+                        <th>Registered Date</th>
+                        <th>Complaints Filed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                        <tr class="emp-row" data-search="{{ emp.full_name | lower }} {{ emp.department | lower }} {{ emp.email | lower }}">
+                            <td>#{{ emp.employee_id }}</td>
+                            <td style="font-weight: 600;">{{ emp.full_name }}</td>
+                            <td style="font-weight: 500; color: var(--primary);">{{ emp.department }}</td>
+                            <td>{{ emp.email }}</td>
+                            <td>{{ emp.created_at.strftime('%Y-%m-%d') if emp.created_at else 'N/A' }}</td>
+                            <td>
+                                <span class="badge badge-priority-medium" style="background-color: var(--primary-light); color: var(--primary); font-size: 0.85rem;">
+                                    {{ emp.complaints_count if emp.complaints_count else 0 }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: var(--text-secondary); text-align: center; padding: 3rem 0;">No registered employees found in the system database.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const empSearch = document.getElementById('employee-search');
+    const empRows = document.querySelectorAll('.emp-row');
+
+    if (empSearch) {
+        empSearch.addEventListener('input', () => {
+            const query = empSearch.value.toLowerCase();
+            empRows.forEach(row => {
+                const text = row.getAttribute('data-search');
+                if (text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Smart Industrial Portal{% endblock %}
+{% block admin_header_title %}Administrative Overview{% endblock %}
+
+{% block admin_content %}
+<!-- Analytics Summary Grid -->
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.total }}</span>
+            <span class="stat-label">Total Tickets</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.pending }}</span>
+            <span class="stat-label">Pending Review</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon danger">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.critical_pending }}</span>
+            <span class="stat-label">Critical Pending</span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.resolved }}</span>
+            <span class="stat-label">Resolved tickets</span>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- Immediate Action Required: Pending Critical/High Tickets -->
+    <div class="card">
+        <h3 class="card-title" style="color: var(--danger);">Urgent Tickets Pending</h3>
+        {% if critical_tickets %}
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Priority</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in critical_tickets %}
+                            <tr>
+                                <td>#{{ ticket.complaint_id }}</td>
+                                <td style="font-weight: 600;">{{ ticket.title }}</td>
+                                <td>
+                                    <span class="badge badge-priority-{{ ticket.priority | lower }}">
+                                        {{ ticket.priority }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/admin/complaints" class="btn btn-secondary btn-sm">Assign</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0; font-size: 0.9rem;">No pending high/critical tickets found. Excellent!</p>
+        {% endif %}
+    </div>
+
+    <!-- Quick Stats Breakdown Cards -->
+    <div class="card">
+        <h3 class="card-title">Administrative Actions</h3>
+        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5;">Access the main panel routes to manage employee registrations, assign technicians, inspect analytical graphics, or download report summaries.</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <a href="/admin/complaints" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.75rem 1rem;">Manage Tickets</a>
+            <a href="/admin/analytics" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.75rem 1rem;">View Charts</a>
+            <a href="/admin/employees" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.75rem 1rem;">Employees</a>
+            <a href="/admin/reports" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.75rem 1rem;">Run Reports</a>
+        </div>
+    </div>
+</div>
+
+<!-- Active Service/Work Orders Table -->
+<div class="card">
+    <h3 class="card-title">Active Work Orders</h3>
+    {% if active_assignments %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Assigned Staff</th>
+                        <th>Assigned Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in active_assignments %}
+                        <tr>
+                            <td>#{{ order.complaint_id }}</td>
+                            <td style="font-weight: 600;">{{ order.title }}</td>
+                            <td>{{ order.category }}</td>
+                            <td style="font-weight: 500; color: var(--primary);">{{ order.assigned_to }}</td>
+                            <td>{{ order.assigned_date.strftime('%Y-%m-%d %H:%M') if order.assigned_date else 'N/A' }}</td>
+                            <td>
+                                <span class="badge badge-status-{{ order.status | replace(' ', '-') | lower }}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: var(--text-secondary); text-align: center; padding: 2rem 0;">No active technicians assigned to complaints.</p>
+    {% endif %}
+</div>
+{% endblock %}

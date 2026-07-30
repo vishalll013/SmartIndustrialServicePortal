@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Generator - Smart Industrial Portal{% endblock %}
+{% block admin_header_title %}Report Generation & Exports{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* CSS Print Rules for PDF Output */
+    @media print {
+        body {
+            background: white !important;
+            color: black !important;
+        }
+        .sidebar, .top-header, .btn, .filter-box, #report-form, .no-print {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+        .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #000;
+            padding-bottom: 1rem;
+        }
+        table {
+            border: 1px solid #000 !important;
+        }
+        table th, table td {
+            border: 1px solid #000 !important;
+            color: black !important;
+            padding: 8px !important;
+            font-size: 0.8rem !important;
+        }
+        .badge {
+            border: 1px solid #000 !important;
+            background: transparent !important;
+            color: black !important;
+            font-size: 0.7rem !important;
+        }
+    }
+    
+    .print-header {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Printable Report Header -->
+<div class="print-header">
+    <h1 style="font-size: 1.5rem; margin-bottom: 0.25rem;">NLC INDIA LIMITED</h1>
+    <h2 style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 500;">Smart Industrial Service & Complaint Management Portal</h2>
+    <p style="font-size: 0.85rem; color: #555;">Generated on: <span id="print-timestamp"></span> | Scope: Corporate Audit Report</p>
+</div>
+
+<!-- Filters Panel -->
+<div class="card filter-box">
+    <h3 class="card-title">Filter Audit Reports</h3>
+    <form method="GET" action="/admin/reports" id="report-form">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" name="start_date" value="{{ filters.start_date }}">
+            </div>
+            <div class="form-group">
+                <label for="end_date">End Date</label>
+                <input type="date" id="end_date" name="end_date" value="{{ filters.end_date }}">
+            </div>
+            <div class="form-group">
+                <label for="dept">Employee Department</label>
+                <select id="dept" name="dept">
+                    <option value="">All Departments</option>
+                    {% for d in departments %}
+                        <option value="{{ d }}" {% if filters.dept == d %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">All Categories</option>
+                    <option value="IT Support" {% if filters.category == 'IT Support' %}selected{% endif %}>IT Support</option>
+                    <option value="Electrical" {% if filters.category == 'Electrical' %}selected{% endif %}>Electrical</option>
+                    <option value="Water Supply" {% if filters.category == 'Water Supply' %}selected{% endif %}>Water Supply</option>
+                    <option value="Equipment Repair" {% if filters.category == 'Equipment Repair' %}selected{% endif %}>Equipment Repair</option>
+                    <option value="Safety Issue" {% if filters.category == 'Safety Issue' %}selected{% endif %}>Safety Issue</option>
+                    <option value="Housekeeping" {% if filters.category == 'Housekeeping' %}selected{% endif %}>Housekeeping</option>
+                    <option value="Network Problem" {% if filters.category == 'Network Problem' %}selected{% endif %}>Network Problem</option>
+                    <option value="Others" {% if filters.category == 'Others' %}selected{% endif %}>Others</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 0.5rem;">
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" {% if filters.status == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Assigned" {% if filters.status == 'Assigned' %}selected{% endif %}>Assigned</option>
+                    <option value="In Progress" {% if filters.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Resolved" {% if filters.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="Rejected" {% if filters.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                    <option value="">All Priorities</option>
+                    <option value="Low" {% if filters.priority == 'Low' %}selected{% endif %}>Low</option>
+                    <option value="Medium" {% if filters.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="High" {% if filters.priority == 'High' %}selected{% endif %}>High</option>
+                    <option value="Critical" {% if filters.priority == 'Critical' %}selected{% endif %}>Critical</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 0.5rem; padding-bottom: 1.25rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1; height: 42px;">Filter Report</button>
+                <a href="/admin/reports" class="btn btn-secondary" style="flex: 1; height: 42px;">Reset</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Report Output Card -->
+<div class="card">
+    <div class="card-title">
+        <span>Report Preview ({{ reports | length }} records matched)</span>
+        <div style="display: flex; gap: 0.5rem;" class="no-print">
+            <button onclick="exportTableToCSV('reports-table', 'nlcil_custom_audit_report.csv')" class="btn btn-secondary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Export CSV
+            </button>
+            <button onclick="printReport()" class="btn btn-primary btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print / Save PDF
+            </button>
+        </div>
+    </div>
+
+    {% if reports %}
+        <div class="table-responsive">
+            <table id="reports-table">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Assigned Staff</th>
+                        <th>Date Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in reports %}
+                        <tr>
+                            <td>#{{ ticket.complaint_id }}</td>
+                            <td>{{ ticket.full_name }}</td>
+                            <td>{{ ticket.department }}</td>
+                            <td style="font-weight: 600;">{{ ticket.title }}</td>
+                            <td>{{ ticket.category }}</td>
+                            <td>
+                                <span class="badge badge-priority-{{ ticket.priority | lower }}">
+                                    {{ ticket.priority }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-status-{{ ticket.status | replace(' ', '-') | lower }}">
+                                    {{ ticket.status }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.assigned_to if ticket.assigned_to else 'Unassigned' }}</td>
+                            <td>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') if ticket.created_at else 'N/A' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: var(--text-secondary); text-align: center; padding: 3rem 0;">No complaints match the specified search filters.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function printReport() {
+        const now = new Date();
+        document.getElementById('print-timestamp').innerText = now.toLocaleString();
+        window.print();
+    }
+</script>
+{% endblock %}

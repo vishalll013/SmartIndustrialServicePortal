@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Smart Industrial Portal{% endblock %}
+{% block header_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+    <!-- Profile Card -->
+    <div class="card">
+        <h3 class="card-title">Corporate Credentials</h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <strong>Employee ID</strong>
+                <span class="text-secondary">#{{ employee.employee_id }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <strong>Full Name</strong>
+                <span class="text-secondary">{{ employee.full_name }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <strong>Department</strong>
+                <span class="text-secondary">{{ employee.department }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <strong>Corporate Email</strong>
+                <span class="text-secondary">{{ employee.email }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                <strong>Member Since</strong>
+                <span class="text-secondary">{{ employee.created_at.strftime('%Y-%m-%d') if employee.created_at else 'N/A' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Updates Form -->
+    <div class="card">
+        <h3 class="card-title">Update Security Profile</h3>
+        <form action="/profile" method="POST">
+            <div class="form-group">
+                <label for="full_name">Update Name</label>
+                <input type="text" id="full_name" name="full_name" value="{{ employee.full_name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Change Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter new password to change">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Leave empty if you do not wish to modify the password.</p>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

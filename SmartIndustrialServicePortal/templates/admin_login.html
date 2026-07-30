@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Login - Smart Industrial Portal{% endblock %}
+
+{% block public_content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 style="color: var(--warning);">Admin Gateway</h1>
+            <p>Authorized access console for system administrators</p>
+        </div>
+        <form action="/admin/login" method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="e.g. admin">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; background-color: var(--sidebar-bg); border: 1px solid var(--border-color);">Verify Credentials</button>
+        </form>
+        <div class="auth-footer">
+            <p><a href="/login">&larr; Back to Employee Portal</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

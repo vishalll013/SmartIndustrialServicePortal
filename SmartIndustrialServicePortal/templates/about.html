@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - Smart Industrial Portal{% endblock %}
+
+{% block public_content %}
+<div class="card">
+    <h1 style="color: var(--primary); margin-bottom: 1rem; font-weight: 800;">About The Portal</h1>
+    <p style="line-height: 1.6; color: var(--text-secondary); margin-bottom: 1.5rem;">
+        The <strong>Smart Industrial Service & Complaint Management Portal</strong> is a state-of-the-art enterprise solution designed to streamline operational maintenance, safety incident logs, and technical requests. Built specifically with heavy industrial workflows in mind, similar to NLC India Limited (NLCIL), the portal facilitates quick reporting and assignment of engineering defects.
+    </p>
+
+    <h2 style="margin-bottom: 0.75rem; font-size: 1.25rem;">Key Objectives</h2>
+    <ul style="margin-left: 1.5rem; margin-bottom: 2rem; color: var(--text-secondary); line-height: 1.6;">
+        <li>Reduce machine downtime through prompt technician assignment.</li>
+        <li>Increase workplace safety by offering real-time critical hazard escalation.</li>
+        <li>Provide transparent ticket tracking and resolution audits for employees.</li>
+        <li>Empower administration with actionable charts, performance reporting, and data metrics.</li>
+    </ul>
+
+    <h2 style="margin-bottom: 0.75rem; font-size: 1.25rem;">Workflow Ecosystem</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div style="background-color: var(--bg-primary); padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+            <h4 style="color: var(--primary); margin-bottom: 0.25rem;">1. Report</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Employee files ticket and system uses AI keyword analysis to suggest priority.</p>
+        </div>
+        <div style="background-color: var(--bg-primary); padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+            <h4 style="color: var(--warning); margin-bottom: 0.25rem;">2. Assign</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Admins review tickets and assign specific technicians or departments.</p>
+        </div>
+        <div style="background-color: var(--bg-primary); padding: 1.25rem; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+            <h4 style="color: var(--success); margin-bottom: 0.25rem;">3. Resolve</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">Technicians complete tasks, and status changes to resolved with audits.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
